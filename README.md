@@ -208,6 +208,68 @@ Pada testing kali ini kami akan mencoba untuk melakukan pada waktu yang telah di
 
 ![Screenshot 2023-12-20 at 18 09 24](https://github.com/tiostwn/Jarkom-Modul-5-E08-2023/assets/53292102/b59589f8-1fff-4c2a-a4f1-57bb4e468cb2)
 
+
+## Soal 7
+Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Sein dengan Port 80 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan dan request dari client yang mengakses Stark dengan port 443 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan.
+
+### Solusi
+Untuk mengerjakan soal 7 ini diperlukan untuk melakukan setup ``web server`` terlebih dahulu. Pertama diperlukan untuk melakukan ``konfigurasi`` terhadap ``ports.conf`` sebagai berikut.
+```R
+echo '
+Listen 80
+Listen 443
+
+<IfModule ssl_module>
+        Listen 443
+</IfModule>
+
+<IfModule mod_gnutls.c>
+        Listen 443
+</IfModule>
+' > /etc/apache2/ports.conf
+```
+Lalu buat page atau ``inisialisasi`` sederhana yang menandakan bahwa merupakan pesan dari ``node`` tersebut.
+```R
+echo '# Sein | Stark
+Sein | Stark nih' > /var/www/html/index.html
+```
+Setelah mengizinkan ``port https``, sekarang saatnya melakukan konfigurasi dengan membuat web server sederhana sebagai berikut
+```R
+echo "
+<VirtualHost *:80>
+    ServerName 192.173.4.2
+    DocumentRoot /var/www/html
+    ErrorLog \${APACHE_LOG_DIR}/error.log
+    CustomLog \${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+<VirtualHost *:443>
+    ServerName 192.173.4.2
+    DocumentRoot /var/www/html
+    ErrorLog \${APACHE_LOG_DIR}/error.log
+    CustomLog \${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+" > /etc/apache2/sites-available/sein.conf
+
+a2ensite sein.conf
+service apache2 restart
+```
+Setelah itu lakukan ``iptables`` pada ``router`` yang mengarah pada`` web server`` yaitu sein dan stark sebagai berikut
+```R
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.173.4.2 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.173.4.2:80
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.173.4.2 -j DNAT --to-destination 192.173.1.118:80
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.173.1.118 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.173.1.118:443
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.173.1.118 -j DNAT --to-destination 192.173.4.2:443
+```
+### Testing
+Untuk melakukan ``testing`` hanya perlu melakukan command seperti berikut
+```R
+curl 192.173.4.2:80
+curl 192.173.1.118:443
+```
+![Screenshot 2023-12-20 195911](https://github.com/tiostwn/Jarkom-Modul-5-E08-2023/assets/100474007/376f8580-31ba-4190-bf85-9844e66c4d97)
+
+
+
 ## Soal 8
 > Karena berbeda koalisi politik, maka subnet dengan masyarakat yang berada pada Revolte dilarang keras mengakses WebServer hingga masa pencoblosan pemilu kepala suku 2024 berakhir. Masa pemilu (hingga pemungutan dan penghitungan suara selesai) kepala suku bersamaan dengan masa pemilu Presiden dan Wakil Presiden Indonesia 2024
 
@@ -299,6 +361,59 @@ Untuk melakukan testing, kami menggunakan ``ping`` terhadap ``Web Server`` yaitu
 ![Screenshot 2023-12-20 at 19 41 55](https://github.com/tiostwn/Jarkom-Modul-5-E08-2023/assets/53292102/b054ef4b-3071-4b8d-b1a9-f6045f5ef6c3)
 
 Disaat ``packet`` yang telah terkirim lebih dari 20, maka ``packet`` selanjutnya akan langsung di ``drop``.
+
+
+## Soal 10
+Karena kepala suku ingin tau paket apa saja yang di-drop, maka di setiap node server dan router ditambahkan logging paket yang di-drop dengan standard syslog level.
+
+### Solusi 
+Untuk bisa LOGGING, kita perlu menambahkan rules iptables Log pada sebelum rules yang sudah dibuat pada no.9
+```R
+iptables -I INPUT -m recent --name portscan --update --seconds 600 --hitcount 20 -j LOG --log-prefix "Portscan detected: " --log-level 4
+
+iptables -I FORWARD -m recent --name portscan --update --seconds 600 --hitcount 20 -j LOG --log-prefix "Portscan detected: " --log-level 4
+```
+
+**Penjelasan**
+```R
+iptables -I INPUT -m recent --name portscan --update --seconds 600 --hitcount 20 -j
+```
+**dan**
+```R
+iptables -I FORWARD -m recent --name portscan --update --seconds 600 --hitcount 20 -j
+```
+memiliki konsep rules yang sama seperti pada no 9, perbedaannya kita perlu menambahkan parameter rules  ``LOG --log-prefix "Portscan detected: " --log-level 4`` dengan tujuan untuk mengarahkan paket yang memenuhi aturan untuk dilakukan logging.
+
+``-j LOG``: digunakan untuk melakukan logging.
+``--log-prefix "Portscan detected: "``: digunakan untuk menambahkan prefix kedalam log yaitu teks "Portscan detected: {isi log}".
+``--log-level 4``: menentukan tingakatan atau level log pada syslog, dalam hal ini level 4 berarti 'Warning'.
+Karena pada log sebelumnya kita menentukan level log 4 (warning), selanjutnya kita perlu melakukan konfigurasi pada ``etc/rsyslog.d/50-default.conf`` untuk menambahkan configurasi ``kernel.warning                  -/var/log/iptables.log`` sehingga seperti configurasi dibawah ini
+
+```R
+
+#
+# First some standard log files.  Log by facility.
+#
+auth,authpriv.*                 /var/log/auth.log
+*.*;auth,authpriv.none          -/var/log/syslog
+#cron.*                         /var/log/cron.log
+#daemon.*                       -/var/log/daemon.log
+kern.*                          -/var/log/kern.log
+kernel.warning                  -/var/log/iptables.log
+#lpr.*                          -/var/log/lpr.log
+mail.*                          -/var/log/mail.log
+#user.*                         -/var/log/user.log
+
+#
+# Logging for the mail system.  Split it up so that
+# it is easy to write scripts to parse these files.
+#
+#mail.info                      -/var/log/mail.info
+#mail.warn                      -/var/log/mail.warn
+mail.err                        /var/log/mail.err
+```
+jika sudah kita perlu melakukan menjalankan command ``touch /var/log/iptables.log`` dan menjalankan ``/etc/init.d/rsyslog restart`` untuk melakukan restart syslog supaya konfigurasi baru dapat diterapkan kedalam syslog dan hasil log bisa masuk kedalam iptables.log
+
  
 
 
