@@ -266,7 +266,6 @@ Untuk melakukan ``testing`` hanya perlu melakukan command seperti berikut
 curl 192.210.4.2:80
 curl 192.210.1.118:443
 ```
-![Screenshot 2023-12-20 195911](https://github.com/tiostwn/Jarkom-Modul-5-E08-2023/assets/100474007/376f8580-31ba-4190-bf85-9844e66c4d97)
 
 
 
