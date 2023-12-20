@@ -23,6 +23,206 @@ Laporan Resmi Praktimum 3 JARKOM
 ## Pembagian IP
 <table><thead><tr><th>Subnet</th><th>Node</th><th>IP</th><th>Netmask</th><th>Length</th><th>NID</th><th>Broadcast</th></tr></thead><tbody><tr><td rowspan="2">A1</td><td>Fern</td><td>192.210.0.1</td><td rowspan="2">255.255.255.252</td><td rowspan="2">30</td><td rowspan="2">192.210.0.0</td><td rowspan="2">192.210.0.3</td></tr><tr><td>Revolte</td><td>192.210.0.2</td></tr><tr><td rowspan="2">A2</td><td>Fern</td><td>192.210.0.5</td><td rowspan="2">255.255.255.252</td><td rowspan="2">30</td><td rowspan="2">192.210.0.4</td><td rowspan="2">192.210.0.7</td></tr><tr><td>Richter</td><td>192.210.0.6</td></tr><tr><td rowspan="3">A3</td><td>Himmel</td><td>192.210.0.129</td><td rowspan="3">255.255.255.128</td><td rowspan="3">25</td><td rowspan="3">192.210.0.128</td><td rowspan="3">192.210.0.255</td></tr><tr><td>Fern</td><td>192.210.0.130</td></tr><tr><td>SchwerMountain</td><td>DHCP</td></tr><tr><td rowspan="2">A4</td><td>Himmel</td><td>192.210.2.1</td><td rowspan="2">255.255.254.0</td><td rowspan="2">23</td><td rowspan="2">192.210.2.0</td><td rowspan="2">192.210.3.255</td></tr><tr><td>LaubHills</td><td>DHCP</td></tr><tr><td rowspan="2">A5</td><td>Frieren</td><td>192.210.0.9</td><td rowspan="2">255.255.255.252</td><td rowspan="2">30</td><td rowspan="2">192.210.0.8</td><td rowspan="2">192.210.0.11</td></tr><tr><td>Himmel</td><td>192.210.0.10</td></tr><tr><td rowspan="2">A6</td><td>Frieren</td><td>192.210.0.13</td><td rowspan="2">255.255.255.252</td><td rowspan="2">30</td><td rowspan="2">192.210.0.12</td><td rowspan="2">192.210.0.15</td></tr><tr><td>Stark</td><td>192.210.0.14</td></tr><tr><td rowspan="2">A7</td><td>Aura</td><td>192.210.0.17</td><td rowspan="2">255.255.255.252</td><td rowspan="2">30</td><td rowspan="2">192.210.0.16</td><td rowspan="2">192.210.0.19</td></tr><tr><td>Frieren</td><td>192.210.0.18</td></tr><tr><td rowspan="2">A8</td><td>Aura</td><td>192.210.0.21</td><td rowspan="2">255.255.255.252</td><td rowspan="2">30</td><td rowspan="2">192.210.0.20</td><td rowspan="2">192.210.0.23</td></tr><tr><td>Heiter</td><td>192.210.0.22</td></tr><tr><td rowspan="2">A9</td><td>Heiter</td><td>192.210.8.1</td><td rowspan="2">255.255.248.0</td><td rowspan="2">21</td><td rowspan="2">192.210.8.0</td><td rowspan="2">192.210.15.255</td></tr><tr><td>TurkRegion</td><td>DHCP</td></tr><tr><td rowspan="3">A10</td><td>Heiter</td><td>192.210.4.1</td><td rowspan="3">255.255.252.0</td><td rowspan="3">22</td><td rowspan="3">192.210.4.0</td><td rowspan="3">192.210.7.255</td></tr><tr><td>Sein</td><td>192.210.4.2</td></tr><tr><td>GrobeForest</td><td>DHCP</td></tr></tbody></table>
 
+## Network Configuration
+
+### Revolte
+```
+auto eth0
+iface eth0 inet static
+	address 192.210.0.2
+	netmask 255.255.255.252
+	gateway 192.210.0.1
+	up echo nameserver 192.210.0.6 > /etc/resolv.conf 
+```
+
+### Ritcher
+```
+auto eth0
+iface eth0 inet static
+	address 192.210.0.6
+	netmask 255.255.255.252
+	gateway 192.210.0.5
+	up echo nameserver 192.168.122.1 > /etc/resolv.conf
+```
+
+### Fern
+```
+# Static config for eth0
+auto eth0
+iface eth0 inet static
+	address 192.210.0.130
+	netmask 255.255.255.128
+	gateway 192.210.0.129
+	up echo nameserver 192.210.0.6 > /etc/resolv.conf
+
+
+# Static config for eth1
+auto eth1
+iface eth1 inet static
+	address 192.210.0.5
+	netmask 255.255.255.252
+
+
+# Static config for eth2
+auto eth2
+iface eth2 inet static
+	address 192.210.0.1
+	netmask 255.255.255.252
+```
+
+### SchewerMountain
+```
+auto eth0
+iface eth0 inet dhcp
+```
+
+### LaubHills
+```
+auto eth0
+iface eth0 inet dhcp
+```
+
+### Himmel
+```
+auto eth0
+iface eth0 inet static
+         address 192.210.0.10
+         netmask 255.255.255.252
+         gateway 192.210.0.9
+	 up echo nameserver 192.210.0.6 > /etc/resolv.conf
+
+auto eth1
+iface eth1 inet static
+         address 192.210.0.129
+         netmask 255.255.255.128
+
+auto eth2
+iface eth2 inet static
+         address 192.210.1.1
+         netmask 255.255.255.0
+```
+
+### Frieren
+```
+auto eth0
+iface eth0 inet static
+         address 192.210.0.18
+         netmask 255.255.255.252
+         gateway 192.210.0.17
+	 up echo nameserver 192.210.0.6 > /etc/resolv.conf
+
+auto eth1
+iface eth1 inet static
+         address 192.210.0.13
+         netmask 255.255.255.252
+
+auto eth2
+iface eth2 inet static
+         address 192.210.0.9
+         netmask 255.255.255.252
+```
+
+### Stark
+```
+auto eth0
+iface eth0 inet static
+         address 192.210.0.14
+         netmask 255.255.255.252
+         gateway 192.210.0.13
+	 up echo nameserver 192.168.122.1 > /etc/resolv.conf
+
+```
+
+### Aura
+```
+auto eth0
+iface eth0 inet static
+    address 192.168.122.14
+    netmask 255.255.255.0
+    gateway 192.168.122.1
+
+auto eth2
+iface eth2 inet static
+       address 192.210.0.17
+       netmask 255.255.255.252
+
+auto eth1
+iface eth1 inet static
+      address 192.210.0.21
+      netmask 255.255.255.252
+```
+
+### Heiter
+```
+auto eth0
+iface eth0 inet static
+         address 192.210.0.22
+         netmask 255.255.255.252
+         gateway 192.210.0.21
+	 up echo nameserver 192.168.122.1 > /etc/resolv.conf
+
+auto eth2
+iface eth2 inet static
+         address 192.210.8.1
+         netmask 255.255.248.0
+
+auto eth1
+iface eth1 inet static
+         address 192.210.4.1
+         netmask 255.255.252.0
+```
+
+
+### TurkRegion
+```
+auto eth0
+iface eth0 inet dhcp
+```
+
+### Sein
+```
+auto eth0
+iface eth0 inet static
+	address 192.210.4.2
+	netmask 255.255.252.0
+	gateway 192.210.4.1
+	up echo nameserver 192.168.122.1 > /etc/resolv.conf
+```
+
+### GrobeForest
+```
+auto eth0
+iface eth0 inet dhcp
+```
+
+## Routing
+
+### Himmel
+```
+route add -net 192.210.0.0 netmask 255.255.255.252 gw 192.210.0.130
+route add -net 192.210.0.4 netmask 255.255.255.252 gw 192.210.0.130
+```
+
+### Frieren
+```
+route add -net 192.210.0.0 netmask 255.255.255.252 gw 192.210.0.10
+route add -net 192.210.0.4 netmask 255.255.255.252 gw 192.210.0.10
+route add -net 192.210.0.128 netmask 255.255.255.128 gw 192.210.0.10
+route add -net 192.210.1.0 netmask 255.255.255.0 gw 192.210.0.10
+```
+
+### Aura
+```
+route add -net 192.210.0.0 netmask 255.255.255.252 gw 192.210.0.18
+route add -net 192.210.0.4 netmask 255.255.255.252 gw 192.210.0.18
+route add -net 192.210.0.128 netmask 255.255.255.128 gw 192.210.0.18
+route add -net 192.210.1.0 netmask 255.255.255.0 gw 192.210.0.18
+route add -net 192.210.0.8 netmask 255.255.255.252 gw 192.210.0.18
+route add -net 192.210.0.12 netmask 255.255.255.252 gw 192.210.0.18
+route add -net 192.210.8.0 netmask 255.255.248.0 gw 192.210.0.22
+route add -net 192.210.4.0 netmask 255.255.252.0 gw 192.210.0.22
+```
+
 ## Soal 1
 
 Agar topologi yang kalian buat dapat mengakses keluar, kalian diminta untuk mengkonfigurasi Aura menggunakan iptables, tetapi tidak ingin menggunakan MASQUERADE.
