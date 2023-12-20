@@ -242,7 +242,7 @@ testing dengan menggunkan ``revote`` tetapi di waktu yang diizinkan
 ## Soal 9
 Sadar akan adanya potensial saling serang antar kubu politik, maka WebServer harus dapat secara otomatis memblokir  alamat IP yang melakukan scanning port dalam jumlah banyak (maksimal 20 scan port) di dalam selang waktu 10 menit. (clue: test dengan nmap)
 
-### Script 
+### Solusi 
 Karena pada soal 9 ini kita diperlukan untuk menggunakan *scanning port* maka diperlukan rantai khusus bernama ``portscan``. Rantai ini nantinya dapat digunakan untuk mengelola aturan-aturan terkait dengan deteksi port scanning.
 
 ```sh
