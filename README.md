@@ -208,67 +208,6 @@ Pada testing kali ini kami akan mencoba untuk melakukan pada waktu yang telah di
 
 ![Screenshot 2023-12-20 at 18 09 24](https://github.com/tiostwn/Jarkom-Modul-5-E08-2023/assets/53292102/b59589f8-1fff-4c2a-a4f1-57bb4e468cb2)
 
-
-## Soal 7
-Karena terdapat 2 WebServer, kalian diminta agar setiap client yang mengakses Sein dengan Port 80 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan dan request dari client yang mengakses Stark dengan port 443 akan didistribusikan secara bergantian pada Sein dan Stark secara berurutan.
-
-### Solusi
-Untuk mengerjakan soal 7 ini diperlukan untuk melakukan setup ``web server`` terlebih dahulu. Pertama diperlukan untuk melakukan ``konfigurasi`` terhadap ``ports.conf`` sebagai berikut.
-```R
-echo '
-Listen 80
-Listen 443
-
-<IfModule ssl_module>
-        Listen 443
-</IfModule>
-
-<IfModule mod_gnutls.c>
-        Listen 443
-</IfModule>
-' > /etc/apache2/ports.conf
-```
-Lalu buat page atau ``inisialisasi`` sederhana yang menandakan bahwa merupakan pesan dari ``node`` tersebut.
-```R
-echo '# Sein | Stark
-Sein | Stark nih' > /var/www/html/index.html
-```
-Setelah mengizinkan ``port https``, sekarang saatnya melakukan konfigurasi dengan membuat web server sederhana sebagai berikut
-```R
-echo "
-<VirtualHost *:80>
-    ServerName 210.192.4.2
-    DocumentRoot /var/www/html
-    ErrorLog \${APACHE_LOG_DIR}/error.log
-    CustomLog \${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>
-<VirtualHost *:443>
-    ServerName 210.192.4.2
-    DocumentRoot /var/www/html
-    ErrorLog \${APACHE_LOG_DIR}/error.log
-    CustomLog \${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>
-" > /etc/apache2/sites-available/sein.conf
-
-a2ensite sein.conf
-service apache2 restart
-```
-Setelah itu lakukan ``iptables`` pada ``router`` yang mengarah pada`` web server`` yaitu sein dan stark sebagai berikut
-```R
-iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.210.4.2 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.210.4.2:80
-iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.210.4.2 -j DNAT --to-destination 192.210.1.118:80
-iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.210.1.118 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.210.1.118:443
-iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.210.1.118 -j DNAT --to-destination 192.210.4.2:443
-```
-### Testing
-Untuk melakukan ``testing`` hanya perlu melakukan command seperti berikut
-```R
-curl 192.210.4.2:80
-curl 192.210.1.118:443
-```
-
-
-
 ## Soal 8
 > Karena berbeda koalisi politik, maka subnet dengan masyarakat yang berada pada Revolte dilarang keras mengakses WebServer hingga masa pencoblosan pemilu kepala suku 2024 berakhir. Masa pemilu (hingga pemungutan dan penghitungan suara selesai) kepala suku bersamaan dengan masa pemilu Presiden dan Wakil Presiden Indonesia 2024
 
