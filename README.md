@@ -370,57 +370,24 @@ Disaat ``packet`` yang telah terkirim lebih dari 20, maka ``packet`` selanjutnya
 ## Soal 10
 Karena kepala suku ingin tau paket apa saja yang di-drop, maka di setiap node server dan router ditambahkan logging paket yang di-drop dengan standard syslog level.
 
-### Solusi 
-Untuk bisa LOGGING, kita perlu menambahkan rules iptables Log pada sebelum rules yang sudah dibuat pada no.9
-```R
-iptables -I INPUT -m recent --name portscan --update --seconds 600 --hitcount 20 -j LOG --log-prefix "Portscan detected: " --log-level 4
 
-iptables -I FORWARD -m recent --name portscan --update --seconds 600 --hitcount 20 -j LOG --log-prefix "Portscan detected: " --log-level 4
+### Solusi
+
+```sql
+iptables -N LOGGING
+iptables -A INPUT -j LOGGING
+iptables -A LOGGING -j LOG --log-prefix "DROP: "
+iptables -A LOGGING -j REJECT
+
+echo'
+kern.warning /var/log/iptables.log
+' >> /etc/rsyslog.conf
+
+/etc/init.d/rsyslog restart
 ```
-
-**Penjelasan**
-```R
-iptables -I INPUT -m recent --name portscan --update --seconds 600 --hitcount 20 -j
-```
-**dan**
-```R
-iptables -I FORWARD -m recent --name portscan --update --seconds 600 --hitcount 20 -j
-```
-memiliki konsep rules yang sama seperti pada no 9, perbedaannya kita perlu menambahkan parameter rules  ``LOG --log-prefix "Portscan detected: " --log-level 4`` dengan tujuan untuk mengarahkan paket yang memenuhi aturan untuk dilakukan logging.
-
-``-j LOG``: digunakan untuk melakukan logging.
-``--log-prefix "Portscan detected: "``: digunakan untuk menambahkan prefix kedalam log yaitu teks "Portscan detected: {isi log}".
-``--log-level 4``: menentukan tingakatan atau level log pada syslog, dalam hal ini level 4 berarti 'Warning'.
-Karena pada log sebelumnya kita menentukan level log 4 (warning), selanjutnya kita perlu melakukan konfigurasi pada ``etc/rsyslog.d/50-default.conf`` untuk menambahkan configurasi ``kernel.warning                  -/var/log/iptables.log`` sehingga seperti configurasi dibawah ini
-
-```R
-
-#
-# First some standard log files.  Log by facility.
-#
-auth,authpriv.*                 /var/log/auth.log
-*.*;auth,authpriv.none          -/var/log/syslog
-#cron.*                         /var/log/cron.log
-#daemon.*                       -/var/log/daemon.log
-kern.*                          -/var/log/kern.log
-kernel.warning                  -/var/log/iptables.log
-#lpr.*                          -/var/log/lpr.log
-mail.*                          -/var/log/mail.log
-#user.*                         -/var/log/user.log
-
-#
-# Logging for the mail system.  Split it up so that
-# it is easy to write scripts to parse these files.
-#
-#mail.info                      -/var/log/mail.info
-#mail.warn                      -/var/log/mail.warn
-mail.err                        /var/log/mail.err
-```
-jika sudah kita perlu melakukan menjalankan command ``touch /var/log/iptables.log`` dan menjalankan ``/etc/init.d/rsyslog restart`` untuk melakukan restart syslog supaya konfigurasi baru dapat diterapkan kedalam syslog dan hasil log bisa masuk kedalam iptables.log
-
- 
-
-
-
-
-
+Keterangan
+- `iptables -N LOGGING` menunjukkan bahwa akan dibuat chain baru bernama LOGGING.
+- `iptables -A INPUT -j LOGGING` menunjukkan bahwa paket yang masuk akan diteruskan ke chain LOGGING.
+- `iptables -A LOGGING -j LOG --log-prefix "DROP: "` menunjukkan bahwa paket yang masuk akan dicatat pada log dengan prefix DROP.
+- `kern.warning /var/log/iptables.log` menunjukkan bahwa log dengan level warning akan dicatat pada file /var/log/iptables.log.
+- `/etc/init.d/rsyslog restart` restart kembali rsyslog.
