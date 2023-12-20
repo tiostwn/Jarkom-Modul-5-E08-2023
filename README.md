@@ -237,13 +237,13 @@ Setelah mengizinkan ``port https``, sekarang saatnya melakukan konfigurasi denga
 ```R
 echo "
 <VirtualHost *:80>
-    ServerName 192.173.4.2
+    ServerName 210.192.4.2
     DocumentRoot /var/www/html
     ErrorLog \${APACHE_LOG_DIR}/error.log
     CustomLog \${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 <VirtualHost *:443>
-    ServerName 192.173.4.2
+    ServerName 210.192.4.2
     DocumentRoot /var/www/html
     ErrorLog \${APACHE_LOG_DIR}/error.log
     CustomLog \${APACHE_LOG_DIR}/access.log combined
@@ -255,16 +255,16 @@ service apache2 restart
 ```
 Setelah itu lakukan ``iptables`` pada ``router`` yang mengarah pada`` web server`` yaitu sein dan stark sebagai berikut
 ```R
-iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.173.4.2 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.173.4.2:80
-iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.173.4.2 -j DNAT --to-destination 192.173.1.118:80
-iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.173.1.118 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.173.1.118:443
-iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.173.1.118 -j DNAT --to-destination 192.173.4.2:443
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.210.4.2 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.210.4.2:80
+iptables -A PREROUTING -t nat -p tcp --dport 80 -d 192.210.4.2 -j DNAT --to-destination 192.210.1.118:80
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.210.1.118 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination 192.210.1.118:443
+iptables -A PREROUTING -t nat -p tcp --dport 443 -d 192.210.1.118 -j DNAT --to-destination 192.210.4.2:443
 ```
 ### Testing
 Untuk melakukan ``testing`` hanya perlu melakukan command seperti berikut
 ```R
-curl 192.173.4.2:80
-curl 192.173.1.118:443
+curl 192.210.4.2:80
+curl 192.210.1.118:443
 ```
 ![Screenshot 2023-12-20 195911](https://github.com/tiostwn/Jarkom-Modul-5-E08-2023/assets/100474007/376f8580-31ba-4190-bf85-9844e66c4d97)
 
